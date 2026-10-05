@@ -36,7 +36,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 
 
 <style>
-/* V24 — one clean live heading + separate session/date line */
+/* V25 — one clean live heading + separate session/date line */
 .mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -71,7 +71,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V24 — definitive mobile live heading */
+/* V25 — definitive mobile live heading */
 #mobileLiveHeading.mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -107,7 +107,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V24 — visible session/date line directly under Open Play • Live */
+/* V25 — visible session/date line directly under Open Play • Live */
 #mobileLiveSession.mobile-live-session{
   min-height:18px!important;
   display:block!important;
@@ -284,7 +284,7 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// V24 — a fresh/reopened page always starts at Check-In.
+// V25 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
@@ -299,7 +299,7 @@ window.addEventListener("load",()=>{
 
 </script>
 <script>
-/* V24 — protect the static Open Play • Live heading from legacy render code. */
+/* V25 — protect the static Open Play • Live heading from legacy render code. */
 window.addEventListener("load",function(){
   const h=document.getElementById("mobileLiveHeading");
   if(!h)return;
