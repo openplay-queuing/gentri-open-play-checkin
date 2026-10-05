@@ -29,13 +29,13 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* V9 — Live View header: session only */
+/* V10 — Live View header: session only */
 #liveView .live-head{padding:22px 24px!important}
 #liveView .live-head .session-only{font-size:28px!important;font-weight:900!important;margin:0!important}
 </style>
 
 <style>
-/* V9 — Live session heading stays on one line */
+/* V10 — Live session heading stays on one line */
 #liveSession{
   display:block!important;
   width:100%!important;
@@ -54,6 +54,35 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
   max-width:none!important;
   box-sizing:border-box!important;
   overflow:visible!important;
+}
+</style>
+
+<style>
+/* V10 — compact one-line live session header, fully contained in the box */
+#liveView .live-head{
+  padding:12px 10px!important;
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+#liveSession{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:0!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+  font-size:12px!important;
+  line-height:1.2!important;
+  letter-spacing:-0.15px!important;
+  text-align:center!important;
+}
+@media (max-width:380px){
+  #liveSession{font-size:11px!important;letter-spacing:-0.25px!important}
 }
 </style>
 </head>
@@ -199,7 +228,7 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// V9 — a fresh/reopened page always starts at Check-In.
+// V10 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
