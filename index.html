@@ -29,7 +29,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* V5 — Live View header: session only */
+/* V6 — Live View header: session only */
 #liveView .live-head{padding:22px 24px!important}
 #liveView .live-head .session-only{font-size:28px!important;font-weight:900!important;margin:0!important}
 </style>
@@ -127,7 +127,7 @@ function renderLiveSnapshot(s){
   document.getElementById("formView").style.display="none";
   document.getElementById("successView").style.display="none";
   document.getElementById("liveView").style.display="block";
-  document.getElementById("liveSession").textContent=`Open Play • ${s.session||"Live"}${s.date?" • "+s.date:""}`;
+  document.getElementById("liveSession").textContent=s.session||"";
   const courts=(s.courts||[]);
   document.getElementById("liveCourts").innerHTML=courts.length?courts.map(c=>{
     const a=c.players||[], left=a.slice(0,2).map(escLive).join(" / "), right=a.slice(2,4).map(escLive).join(" / ");
@@ -168,18 +168,17 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// Never blindly reopen an old mobile session. Wait for the current Queue snapshot to validate it.
+// V6 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
-  const saved=localStorage.getItem("gentri_open_play_player_name")||"";
-  const sid=localStorage.getItem("gentri_open_play_session_id")||"";
-  if(saved){
-    currentPlayerName=saved;
-    currentSessionId=sid;
-    document.getElementById("formView").style.display="block";
-    document.getElementById("successView").style.display="none";
-    document.getElementById("liveView").style.display="none";
-    startLivePlayerView(saved);
-  }
+  try{
+    localStorage.removeItem("gentri_open_play_player_name");
+    localStorage.removeItem("gentri_open_play_session_id");
+  }catch(e){}
+  currentPlayerName="";
+  currentSessionId="";
+  document.getElementById("formView").style.display="block";
+  document.getElementById("successView").style.display="none";
+  document.getElementById("liveView").style.display="none";
 });
 
 </script></body></html>
