@@ -29,13 +29,13 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* V11 — Live View header: session only */
+/* V12 — Live View header: session only */
 #liveView .live-head{padding:22px 24px!important}
 #liveView .live-head .session-only{font-size:28px!important;font-weight:900!important;margin:0!important}
 </style>
 
 <style>
-/* V11 — Live session heading stays on one line */
+/* V12 — Live session heading stays on one line */
 #liveSession{
   display:block!important;
   width:100%!important;
@@ -58,7 +58,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V11 — compact one-line live session header, fully contained in the box */
+/* V12 — compact one-line live session header, fully contained in the box */
 #liveView .live-head{
   padding:12px 10px!important;
   width:100%!important;
@@ -87,7 +87,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V11 — extra-small one-line mobile session heading */
+/* V12 — extra-small one-line mobile session heading */
 #liveView .live-head{
   padding:8px 6px!important;
   min-height:0!important;
@@ -105,6 +105,36 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 }
 @media (max-width:380px){
   #liveSession{font-size:7px!important}
+}
+</style>
+
+<style>
+/* V12 — exact override: compact session heading on ONE line */
+#liveView .live-head .session-only,
+#liveView #liveSession,
+#liveSession.session-only{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  font-size:10px!important;
+  line-height:12px!important;
+  font-weight:700!important;
+  letter-spacing:0!important;
+  white-space:nowrap!important;
+  word-break:normal!important;
+  overflow-wrap:normal!important;
+  overflow:hidden!important;
+  text-overflow:clip!important;
+  text-align:center!important;
+}
+#liveView .live-head{
+  padding:7px 5px!important;
+  min-height:26px!important;
+  height:auto!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
 }
 </style>
 </head>
@@ -250,7 +280,7 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// V11 — a fresh/reopened page always starts at Check-In.
+// V12 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
