@@ -29,13 +29,13 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* V10 — Live View header: session only */
+/* V11 — Live View header: session only */
 #liveView .live-head{padding:22px 24px!important}
 #liveView .live-head .session-only{font-size:28px!important;font-weight:900!important;margin:0!important}
 </style>
 
 <style>
-/* V10 — Live session heading stays on one line */
+/* V11 — Live session heading stays on one line */
 #liveSession{
   display:block!important;
   width:100%!important;
@@ -58,7 +58,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V10 — compact one-line live session header, fully contained in the box */
+/* V11 — compact one-line live session header, fully contained in the box */
 #liveView .live-head{
   padding:12px 10px!important;
   width:100%!important;
@@ -83,6 +83,28 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 }
 @media (max-width:380px){
   #liveSession{font-size:11px!important;letter-spacing:-0.25px!important}
+}
+</style>
+
+<style>
+/* V11 — extra-small one-line mobile session heading */
+#liveView .live-head{
+  padding:8px 6px!important;
+  min-height:0!important;
+}
+#liveSession{
+  font-size:8px!important;
+  line-height:1.05!important;
+  font-weight:700!important;
+  letter-spacing:-0.1px!important;
+  white-space:nowrap!important;
+  width:100%!important;
+  max-width:100%!important;
+  overflow:visible!important;
+  text-align:center!important;
+}
+@media (max-width:380px){
+  #liveSession{font-size:7px!important}
 }
 </style>
 </head>
@@ -228,7 +250,7 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// V10 — a fresh/reopened page always starts at Check-In.
+// V11 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
