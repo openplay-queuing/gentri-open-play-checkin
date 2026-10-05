@@ -36,7 +36,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 
 
 <style>
-/* V22 — one clean live heading + separate session/date line */
+/* V23 — one clean live heading + separate session/date line */
 .mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -67,6 +67,42 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
   font-weight:700!important;
   text-align:center!important;
   white-space:nowrap!important;
+}
+</style>
+
+<style>
+/* V23 — definitive mobile live heading */
+#mobileLiveHeading.mobile-live-heading{
+  display:block!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:5px 8px!important;
+  border-radius:14px!important;
+  background:#083f73!important;
+  color:#fff!important;
+  font-size:16px!important;
+  line-height:20px!important;
+  font-weight:800!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+}
+#mobileLiveSession.mobile-live-session{
+  display:block!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  margin:0 0 10px!important;
+  padding:5px 4px 3px!important;
+  background:transparent!important;
+  color:#334155!important;
+  font-family:Arial,sans-serif!important;
+  font-size:10px!important;
+  line-height:13px!important;
+  font-weight:700!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
 }
 </style>
 </head>
@@ -157,8 +193,9 @@ function renderLiveSnapshot(s){
   const fixedHeading=document.getElementById("mobileLiveHeading");
   if(fixedHeading)fixedHeading.textContent="Open Play • Live";
   const sessionLine=document.getElementById("mobileLiveSession");
-  if(sessionLine)sessionLine.textContent=`${s.session||""}${s.date?" • "+s.date:""}`;
-  const sid=String(s.sessionId||"");
+  if(sessionLine){
+    sessionLine.textContent=`${s.session||""}${s.date?" • "+s.date:""}`;
+  }const sid=String(s.sessionId||"");
   const me=(s.players||[]).find(x=>String(x.name||"").trim().toLowerCase()===currentPlayerName.trim().toLowerCase());
   if(!me){
     // Fresh QR check-ins need a short window for the staff Queue to import the Supabase row.
@@ -216,7 +253,7 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// V22 — a fresh/reopened page always starts at Check-In.
+// V23 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
@@ -231,7 +268,7 @@ window.addEventListener("load",()=>{
 
 </script>
 <script>
-/* V22 — protect the static Open Play • Live heading from legacy render code. */
+/* V23 — protect the static Open Play • Live heading from legacy render code. */
 window.addEventListener("load",function(){
   const h=document.getElementById("mobileLiveHeading");
   if(!h)return;
