@@ -36,7 +36,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 
 
 <style>
-/* V21 — one clean live heading + separate session/date line */
+/* V22 — one clean live heading + separate session/date line */
 .mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -84,8 +84,8 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 <h2>You're checked in! Welcome to The Pickle Project Gentri Open Play.</h2>
 <p>Opening the live player view…</p></section>
 <section class="live" id="liveView">
-  <div class="mobile-live-heading">Open Play • Live</div>
-  <div class="mobile-live-session" id="mobileLiveSession"></div>
+  <div class="mobile-live-heading" id="mobileLiveHeading">Open Play • Live</div>
+  <div class="mobile-live-session" id="mobileLiveSession">Loading session…</div>
   <div class="live-card"><h3>🏓 NOW PLAYING</h3><div id="liveCourts"><div class="empty-live">Waiting for live court information…</div></div></div>
   <div class="live-card next-live"><h3>👥 NEXT 3 GROUPS</h3><div id="liveNext"><div class="empty-live">Waiting for the next groups…</div></div></div>
   <div class="live-card mine"><h3>👤 MY SESSION</h3>
@@ -154,12 +154,10 @@ function returnToCheckIn(message){
 function escLive(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function renderLiveSnapshot(s){
   if(!s||s.active===false)return;
-  const mobileLiveSession=document.getElementById("mobileLiveSession");
-  if(mobileLiveSession){
-    mobileLiveSession.textContent=`${s.session||""}${s.date?" • "+s.date:""}`;
-  }
-if(sessionDateLine)sessionDateLine.textContent=`${s.session||""}${s.date?" • "+s.date:""}`;
-if(heroSessionDate)heroSessionDate.textContent=`${s.session||""}${s.date?" • "+s.date:""}`;
+  const fixedHeading=document.getElementById("mobileLiveHeading");
+  if(fixedHeading)fixedHeading.textContent="Open Play • Live";
+  const sessionLine=document.getElementById("mobileLiveSession");
+  if(sessionLine)sessionLine.textContent=`${s.session||""}${s.date?" • "+s.date:""}`;
   const sid=String(s.sessionId||"");
   const me=(s.players||[]).find(x=>String(x.name||"").trim().toLowerCase()===currentPlayerName.trim().toLowerCase());
   if(!me){
@@ -218,7 +216,7 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// V21 — a fresh/reopened page always starts at Check-In.
+// V22 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
@@ -231,4 +229,16 @@ window.addEventListener("load",()=>{
   document.getElementById("liveView").style.display="none";
 });
 
-</script></body></html>
+</script>
+<script>
+/* V22 — protect the static Open Play • Live heading from legacy render code. */
+window.addEventListener("load",function(){
+  const h=document.getElementById("mobileLiveHeading");
+  if(!h)return;
+  h.textContent="Open Play • Live";
+  new MutationObserver(function(){
+    if(h.textContent!=="Open Play • Live")h.textContent="Open Play • Live";
+  }).observe(h,{childList:true,characterData:true,subtree:true});
+});
+</script>
+</body></html>
