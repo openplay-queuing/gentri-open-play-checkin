@@ -29,9 +29,32 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* V8 — Live View header: session only */
+/* V9 — Live View header: session only */
 #liveView .live-head{padding:22px 24px!important}
 #liveView .live-head .session-only{font-size:28px!important;font-weight:900!important;margin:0!important}
+</style>
+
+<style>
+/* V9 — Live session heading stays on one line */
+#liveSession{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  word-break:normal!important;
+  overflow-wrap:normal!important;
+  font-size:clamp(14px,4.2vw,28px)!important;
+  line-height:1.15!important;
+  letter-spacing:0!important;
+}
+#liveView .live-head{
+  width:100%!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+}
 </style>
 </head>
 <body><div class="wrap"><main class="card">
@@ -176,7 +199,7 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// V8 — a fresh/reopened page always starts at Check-In.
+// V9 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
