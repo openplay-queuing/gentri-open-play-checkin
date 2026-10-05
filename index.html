@@ -27,6 +27,12 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 .live-note{text-align:center;color:#64748b;font-size:12px;font-weight:700;padding:2px 5px 8px}.empty-live{color:#64748b;text-align:center;padding:13px;font-weight:700}
 @media(max-width:390px){.mine-grid{grid-template-columns:1fr 1fr}.matchup{font-size:14px}.live{padding:10px}}
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+/* V5 — Live View header: session only */
+#liveView .live-head{padding:22px 24px!important}
+#liveView .live-head .session-only{font-size:28px!important;font-weight:900!important;margin:0!important}
+</style>
 </head>
 <body><div class="wrap"><main class="card">
 <section class="hero"><h1>The Pickle Project Gentri</h1><b>OPEN PLAY CHECK-IN</b></section>
@@ -42,7 +48,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 <h2>You're checked in! Welcome to The Pickle Project Gentri Open Play.</h2>
 <p>Opening the live player view…</p></section>
 <section class="live" id="liveView">
-  <div class="live-head"><h2>THE PICKLE PROJECT — GENTRI</h2><div class="session" id="liveSession">Open Play • Live</div></div>
+  <div class="live-head"><div class="session session-only" id="liveSession">Open Play • Live</div></div>
   <div class="live-card"><h3>🏓 NOW PLAYING</h3><div id="liveCourts"><div class="empty-live">Waiting for live court information…</div></div></div>
   <div class="live-card next-live"><h3>👥 NEXT 3 GROUPS</h3><div id="liveNext"><div class="empty-live">Waiting for the next groups…</div></div></div>
   <div class="live-card mine"><h3>👤 MY SESSION</h3>
@@ -77,6 +83,7 @@ async function submitCheckin(){
   });
   if(!r.ok)throw new Error(await r.text());
   localStorage.setItem("gentri_open_play_player_name",name);
+   localStorage.removeItem("gentri_open_play_session_id");
   document.getElementById("formView").style.display="none";
   document.getElementById("successView").style.display="block";
   startLivePlayerView(name);
@@ -91,10 +98,35 @@ async function submitCheckin(){
 }
 
 const LIVE_CHANNEL="gentri-open-play-live-v1";
-let liveClient=null,liveChannel=null,currentPlayerName="";
+let liveClient=null,liveChannel=null,currentPlayerName="",currentSessionId="";
+function returnToCheckIn(message){
+  try{
+    localStorage.removeItem("gentri_open_play_player_name");
+    localStorage.removeItem("gentri_open_play_session_id");
+  }catch(e){}
+  currentPlayerName="";currentSessionId="";
+  document.getElementById("successView").style.display="none";
+  document.getElementById("liveView").style.display="none";
+  document.getElementById("formView").style.display="block";
+  const em=document.getElementById("errorMsg");
+  if(em&&message){em.textContent=message;em.style.display="block"}
+}
 function escLive(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function renderLiveSnapshot(s){
-  if(!s)return;
+  if(!s||s.active===false)return;
+  const sid=String(s.sessionId||"");
+  const me=(s.players||[]).find(x=>String(x.name||"").trim().toLowerCase()===currentPlayerName.trim().toLowerCase());
+  if(!me){
+    if(currentPlayerName)returnToCheckIn("Your Open Play session is no longer active. Please check in again.");
+    return;
+  }
+  if(sid){
+    currentSessionId=sid;
+    localStorage.setItem("gentri_open_play_session_id",sid);
+  }
+  document.getElementById("formView").style.display="none";
+  document.getElementById("successView").style.display="none";
+  document.getElementById("liveView").style.display="block";
   document.getElementById("liveSession").textContent=`Open Play • ${s.session||"Live"}${s.date?" • "+s.date:""}`;
   const courts=(s.courts||[]);
   document.getElementById("liveCourts").innerHTML=courts.length?courts.map(c=>{
@@ -103,7 +135,6 @@ function renderLiveSnapshot(s){
   }).join(""):'<div class="empty-live">No games are currently in progress.</div>';
   const groups=(s.nextGroups||[]).slice(0,3);
   document.getElementById("liveNext").innerHTML=groups.map((g,i)=>`<div class="next-row"><div class="next-num">${i+1}</div><div>${(g.players||[]).length?(g.players||[]).map(escLive).join(" • "):"Waiting for a complete group"}</div></div>`).join("");
-  const me=(s.players||[]).find(x=>String(x.name||"").trim().toLowerCase()===currentPlayerName.trim().toLowerCase());
   if(me){
     document.getElementById("myGames").textContent=me.games??0;
     document.getElementById("myMatches").textContent=me.matches??me.games??0;
@@ -120,18 +151,33 @@ function startLivePlayerView(name){
   liveClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
   liveChannel=liveClient.channel(LIVE_CHANNEL,{config:{broadcast:{self:false}}});
   liveChannel.on("broadcast",{event:"snapshot"},({payload})=>renderLiveSnapshot(payload));
+  liveChannel.on("broadcast",{event:"session_end"},({payload})=>{
+    if(!payload)return;
+    const sid=String(payload.sessionId||"");
+    if(!currentSessionId||!sid||sid===currentSessionId){
+      returnToCheckIn(payload.reason==="reset"?"The session was reset. Please check in again.":"The Open Play session has ended.");
+    }
+  });
+  liveChannel.on("broadcast",{event:"player_removed"},({payload})=>{
+    if(!payload)return;
+    const sameName=String(payload.playerName||"").trim().toLowerCase()===currentPlayerName.trim().toLowerCase();
+    const sameSession=!currentSessionId||!payload.sessionId||String(payload.sessionId)===currentSessionId;
+    if(sameName&&sameSession)returnToCheckIn("You have been checked out. Please check in again to rejoin.");
+  });
   liveChannel.subscribe(status=>{
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// If the player returns to the page after checking in, reopen the live view directly.
+// Never blindly reopen an old mobile session. Wait for the current Queue snapshot to validate it.
 window.addEventListener("load",()=>{
   const saved=localStorage.getItem("gentri_open_play_player_name")||"";
+  const sid=localStorage.getItem("gentri_open_play_session_id")||"";
   if(saved){
     currentPlayerName=saved;
-    document.getElementById("formView").style.display="none";
+    currentSessionId=sid;
+    document.getElementById("formView").style.display="block";
     document.getElementById("successView").style.display="none";
-    document.getElementById("liveView").style.display="block";
+    document.getElementById("liveView").style.display="none";
     startLivePlayerView(saved);
   }
 });
