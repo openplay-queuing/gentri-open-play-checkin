@@ -29,7 +29,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* V7 — Live View header: session only */
+/* V8 — Live View header: session only */
 #liveView .live-head{padding:22px 24px!important}
 #liveView .live-head .session-only{font-size:28px!important;font-weight:900!important;margin:0!important}
 </style>
@@ -84,6 +84,8 @@ async function submitCheckin(){
   if(!r.ok)throw new Error(await r.text());
   localStorage.setItem("gentri_open_play_player_name",name);
    localStorage.removeItem("gentri_open_play_session_id");
+   liveCheckInGraceUntil=Date.now()+20000;
+   playerSeenInCurrentSession=false;
   document.getElementById("formView").style.display="none";
   document.getElementById("successView").style.display="block";
   startLivePlayerView(name);
@@ -99,12 +101,13 @@ async function submitCheckin(){
 
 const LIVE_CHANNEL="gentri-open-play-live-v1";
 let liveClient=null,liveChannel=null,currentPlayerName="",currentSessionId="";
+let liveCheckInGraceUntil=0,playerSeenInCurrentSession=false;
 function returnToCheckIn(message){
   try{
     localStorage.removeItem("gentri_open_play_player_name");
     localStorage.removeItem("gentri_open_play_session_id");
   }catch(e){}
-  currentPlayerName="";currentSessionId="";
+  currentPlayerName="";currentSessionId="";liveCheckInGraceUntil=0;playerSeenInCurrentSession=false;
   document.getElementById("successView").style.display="none";
   document.getElementById("liveView").style.display="none";
   document.getElementById("formView").style.display="block";
@@ -117,9 +120,14 @@ function renderLiveSnapshot(s){
   const sid=String(s.sessionId||"");
   const me=(s.players||[]).find(x=>String(x.name||"").trim().toLowerCase()===currentPlayerName.trim().toLowerCase());
   if(!me){
-    if(currentPlayerName)returnToCheckIn("Your Open Play session is no longer active. Please check in again.");
+    // Fresh QR check-ins need a short window for the staff Queue to import the Supabase row.
+    if(currentPlayerName && playerSeenInCurrentSession && Date.now()>liveCheckInGraceUntil){
+      returnToCheckIn("Your Open Play session is no longer active. Please check in again.");
+    }
     return;
   }
+  playerSeenInCurrentSession=true;
+  liveCheckInGraceUntil=0;
   if(sid){
     currentSessionId=sid;
     localStorage.setItem("gentri_open_play_session_id",sid);
@@ -168,7 +176,7 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// V7 — a fresh/reopened page always starts at Check-In.
+// V8 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
