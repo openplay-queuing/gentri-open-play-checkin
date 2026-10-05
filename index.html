@@ -29,7 +29,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-/* V6 — Live View header: session only */
+/* V7 — Live View header: session only */
 #liveView .live-head{padding:22px 24px!important}
 #liveView .live-head .session-only{font-size:28px!important;font-weight:900!important;margin:0!important}
 </style>
@@ -127,7 +127,7 @@ function renderLiveSnapshot(s){
   document.getElementById("formView").style.display="none";
   document.getElementById("successView").style.display="none";
   document.getElementById("liveView").style.display="block";
-  document.getElementById("liveSession").textContent=s.session||"";
+  document.getElementById("liveSession").textContent=`Open Play • ${s.session||"Live"}${s.date?" • "+s.date:""}`;
   const courts=(s.courts||[]);
   document.getElementById("liveCourts").innerHTML=courts.length?courts.map(c=>{
     const a=c.players||[], left=a.slice(0,2).map(escLive).join(" / "), right=a.slice(2,4).map(escLive).join(" / ");
@@ -168,7 +168,7 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// V6 — a fresh/reopened page always starts at Check-In.
+// V7 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
