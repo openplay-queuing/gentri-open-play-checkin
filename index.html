@@ -30,40 +30,39 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 
 
 
+
 <style>
-/* V14 — force the mobile live header to fit completely on one line */
-html body #liveView .live-head{
-  display:block!important;
-  width:100%!important;
-  max-width:100%!important;
-  height:24px!important;
-  min-height:24px!important;
-  padding:4px 6px!important;
-  margin:0!important;
-  overflow:hidden!important;
-  box-sizing:border-box!important;
+/* V15 — completely new mobile session bar */
+#compactSessionBar{
+  width:100%;
+  height:24px;
+  padding:0 6px;
+  margin:0 0 10px 0;
+  box-sizing:border-box;
+  border-radius:8px;
+  background:#083f73;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
-html body #liveView .live-head #liveSession.session.session-only{
-  display:block!important;
-  width:100%!important;
-  max-width:100%!important;
-  height:16px!important;
-  margin:0!important;
-  padding:0!important;
-  box-sizing:border-box!important;
-  font-family:Arial,sans-serif!important;
-  font-size:7px!important;
-  line-height:16px!important;
-  font-weight:600!important;
-  letter-spacing:-0.25px!important;
-  white-space:nowrap!important;
-  word-break:normal!important;
-  overflow-wrap:normal!important;
-  overflow:hidden!important;
-  text-overflow:clip!important;
-  text-align:center!important;
-  transform:none!important;
+#compactSessionText{
+  display:block;
+  width:100%;
+  margin:0;
+  padding:0;
+  color:#fff;
+  font-family:Arial,sans-serif;
+  font-size:9px;
+  line-height:1;
+  font-weight:600;
+  letter-spacing:-0.15px;
+  text-align:center;
+  white-space:nowrap;
+  overflow:hidden;
 }
+@media(max-width:430px){#compactSessionText{font-size:8px}}
+@media(max-width:360px){#compactSessionText{font-size:7px}}
 </style>
 </head>
 <body><div class="wrap"><main class="card">
@@ -80,7 +79,7 @@ html body #liveView .live-head #liveSession.session.session-only{
 <h2>You're checked in! Welcome to The Pickle Project Gentri Open Play.</h2>
 <p>Opening the live player view…</p></section>
 <section class="live" id="liveView">
-  <div class="live-head"><div class="session session-only" id="liveSession">Open Play • Live</div></div>
+  <div id="compactSessionBar"><span id="compactSessionText"></span></div>
   <div class="live-card"><h3>🏓 NOW PLAYING</h3><div id="liveCourts"><div class="empty-live">Waiting for live court information…</div></div></div>
   <div class="live-card next-live"><h3>👥 NEXT 3 GROUPS</h3><div id="liveNext"><div class="empty-live">Waiting for the next groups…</div></div></div>
   <div class="live-card mine"><h3>👤 MY SESSION</h3>
@@ -167,7 +166,7 @@ function renderLiveSnapshot(s){
   document.getElementById("formView").style.display="none";
   document.getElementById("successView").style.display="none";
   document.getElementById("liveView").style.display="block";
-  document.getElementById("liveSession").textContent=`Open Play • ${s.session||"Live"}${s.date?" • "+s.date:""}`;
+  document.getElementById("compactSessionText").textContent=`Open Play • ${s.session||"Live"}${s.date?" • "+s.date:""}`;
   const courts=(s.courts||[]);
   document.getElementById("liveCourts").innerHTML=courts.length?courts.map(c=>{
     const a=c.players||[], left=a.slice(0,2).map(escLive).join(" / "), right=a.slice(2,4).map(escLive).join(" / ");
@@ -208,7 +207,7 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// V14 — a fresh/reopened page always starts at Check-In.
+// V15 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
