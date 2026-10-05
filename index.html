@@ -36,7 +36,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 
 
 <style>
-/* V28 — one clean live heading + separate session/date line */
+/* V29 — one clean live heading + visible session/date line */
 .mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -71,7 +71,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V28 — definitive mobile live heading */
+/* V29 — definitive mobile live heading */
 #mobileLiveHeading.mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -107,7 +107,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V28 — visible session/date line directly under Open Play • Live */
+/* V29 — visible session/date line directly under Open Play • Live */
 #mobileLiveSession.mobile-live-session{
   min-height:18px!important;
   display:block!important;
@@ -124,7 +124,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
   white-space:nowrap!important;
 }
 </style>
-<style>/* V28 — session/date only */#mobileLiveSession{display:none!important}</style>
+<style>/* V29 — show session time and date under the live heading */#mobileLiveSession{display:block!important}</style>
 </head>
 <body><div class="wrap"><main class="card">
 <section class="hero"><h1>The Pickle Project Gentri</h1><b>OPEN PLAY CHECK-IN</b></section>
@@ -217,6 +217,14 @@ function renderLiveSnapshot(s){
   let sessionText=String(s.session||s.sessionTime||s.time||"").trim();
   let dateText=String(s.date||s.sessionDate||"").trim();
 
+  // Format ISO session date for the player view.
+  function formatSessionDate(v){
+    const m=String(v||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(!m)return String(v||"");
+    const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
+    return d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
+  }
+
   // Fallback: derive the values from the Queue session ID when needed.
   if((!sessionText||!dateText) && sid){
     const m=sid.match(/(\d{4}-\d{2}-\d{2}).*?(\d{1,2}:\d{2}).*?(\d{1,2}:\d{2})/);
@@ -285,7 +293,7 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// V28 — a fresh/reopened page always starts at Check-In.
+// V29 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
@@ -300,7 +308,7 @@ window.addEventListener("load",()=>{
 
 </script>
 <script>
-/* V28 — protect the static Open Play • Live heading from legacy render code. */
+/* V29 — protect the static Open Play • Live heading from legacy render code. */
 window.addEventListener("load",function(){
   const h=document.getElementById("mobileLiveHeading");
   if(!h)return;
