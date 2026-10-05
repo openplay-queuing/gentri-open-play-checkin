@@ -28,113 +28,39 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 @media(max-width:390px){.mine-grid{grid-template-columns:1fr 1fr}.matchup{font-size:14px}.live{padding:10px}}
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<style>
-/* V12 — Live View header: session only */
-#liveView .live-head{padding:22px 24px!important}
-#liveView .live-head .session-only{font-size:28px!important;font-weight:900!important;margin:0!important}
-</style>
 
 <style>
-/* V12 — Live session heading stays on one line */
-#liveSession{
+/* V13 — clean compact mobile live header */
+#liveView .live-head{
   display:block!important;
   width:100%!important;
-  max-width:none!important;
-  white-space:nowrap!important;
-  overflow:visible!important;
-  text-overflow:clip!important;
-  word-break:normal!important;
-  overflow-wrap:normal!important;
-  font-size:clamp(14px,4.2vw,28px)!important;
-  line-height:1.15!important;
-  letter-spacing:0!important;
-}
-#liveView .live-head{
-  width:100%!important;
-  max-width:none!important;
-  box-sizing:border-box!important;
-  overflow:visible!important;
-}
-</style>
-
-<style>
-/* V12 — compact one-line live session header, fully contained in the box */
-#liveView .live-head{
-  padding:12px 10px!important;
-  width:100%!important;
   max-width:100%!important;
+  height:22px!important;
+  min-height:22px!important;
+  padding:5px 4px!important;
+  margin:0!important;
   box-sizing:border-box!important;
   overflow:hidden!important;
 }
-#liveSession{
+#liveView .live-head #liveSession.session-only{
   display:block!important;
   width:100%!important;
   max-width:100%!important;
-  box-sizing:border-box!important;
+  height:12px!important;
   margin:0!important;
   padding:0!important;
-  white-space:nowrap!important;
-  overflow:hidden!important;
-  text-overflow:clip!important;
-  font-size:12px!important;
-  line-height:1.2!important;
-  letter-spacing:-0.15px!important;
-  text-align:center!important;
-}
-@media (max-width:380px){
-  #liveSession{font-size:11px!important;letter-spacing:-0.25px!important}
-}
-</style>
-
-<style>
-/* V12 — extra-small one-line mobile session heading */
-#liveView .live-head{
-  padding:8px 6px!important;
-  min-height:0!important;
-}
-#liveSession{
+  box-sizing:border-box!important;
+  font-family:Arial,sans-serif!important;
   font-size:8px!important;
-  line-height:1.05!important;
-  font-weight:700!important;
-  letter-spacing:-0.1px!important;
-  white-space:nowrap!important;
-  width:100%!important;
-  max-width:100%!important;
-  overflow:visible!important;
-  text-align:center!important;
-}
-@media (max-width:380px){
-  #liveSession{font-size:7px!important}
-}
-</style>
-
-<style>
-/* V12 — exact override: compact session heading on ONE line */
-#liveView .live-head .session-only,
-#liveView #liveSession,
-#liveSession.session-only{
-  display:block!important;
-  width:100%!important;
-  max-width:100%!important;
-  margin:0!important;
-  padding:0!important;
-  font-size:10px!important;
   line-height:12px!important;
-  font-weight:700!important;
-  letter-spacing:0!important;
+  font-weight:600!important;
+  letter-spacing:-0.15px!important;
   white-space:nowrap!important;
-  word-break:normal!important;
+  word-break:keep-all!important;
   overflow-wrap:normal!important;
   overflow:hidden!important;
   text-overflow:clip!important;
   text-align:center!important;
-}
-#liveView .live-head{
-  padding:7px 5px!important;
-  min-height:26px!important;
-  height:auto!important;
-  overflow:hidden!important;
-  box-sizing:border-box!important;
 }
 </style>
 </head>
@@ -280,7 +206,7 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// V12 — a fresh/reopened page always starts at Check-In.
+// V13 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
