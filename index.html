@@ -34,31 +34,39 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 
 
 
+
 <style>
-/* V20 — keep Open Play • Live and show session/date directly below */
-#liveTitleBar{
-  width:100%;
-  padding:7px 10px;
-  border-radius:18px;
-  background:#083f73;
-  color:#fff;
-  font-family:Arial,sans-serif;
-  font-size:18px;
-  line-height:22px;
-  font-weight:800;
-  text-align:center;
-  white-space:nowrap;
+/* V21 — one clean live heading + separate session/date line */
+.mobile-live-heading{
+  display:block!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+  padding:5px 8px!important;
+  border-radius:14px!important;
+  background:#083f73!important;
+  color:#fff!important;
+  font-family:Arial,sans-serif!important;
+  font-size:16px!important;
+  line-height:20px!important;
+  font-weight:800!important;
+  text-align:center!important;
+  white-space:nowrap!important;
 }
-#liveSessionDateLine{
-  width:100%;
-  padding:5px 6px 10px;
-  color:#334155;
-  font-family:Arial,sans-serif;
-  font-size:11px;
-  line-height:14px;
-  font-weight:700;
-  text-align:center;
-  white-space:nowrap;
+.mobile-live-session{
+  display:block!important;
+  width:100%!important;
+  box-sizing:border-box!important;
+  margin:0 0 10px!important;
+  padding:4px 6px 2px!important;
+  background:transparent!important;
+  color:#334155!important;
+  font-family:Arial,sans-serif!important;
+  font-size:10px!important;
+  line-height:13px!important;
+  font-weight:700!important;
+  text-align:center!important;
+  white-space:nowrap!important;
 }
 </style>
 </head>
@@ -76,8 +84,8 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 <h2>You're checked in! Welcome to The Pickle Project Gentri Open Play.</h2>
 <p>Opening the live player view…</p></section>
 <section class="live" id="liveView">
-  <div id="liveTitleBar">Open Play • Live</div>
-  <div id="liveSessionDateLine"></div>
+  <div class="mobile-live-heading">Open Play • Live</div>
+  <div class="mobile-live-session" id="mobileLiveSession"></div>
   <div class="live-card"><h3>🏓 NOW PLAYING</h3><div id="liveCourts"><div class="empty-live">Waiting for live court information…</div></div></div>
   <div class="live-card next-live"><h3>👥 NEXT 3 GROUPS</h3><div id="liveNext"><div class="empty-live">Waiting for the next groups…</div></div></div>
   <div class="live-card mine"><h3>👤 MY SESSION</h3>
@@ -146,10 +154,12 @@ function returnToCheckIn(message){
 function escLive(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function renderLiveSnapshot(s){
   if(!s||s.active===false)return;
-  const sessionDateLine=document.getElementById("liveSessionDateLine");
-  if(sessionDateLine)sessionDateLine.textContent=`${s.session||""}${s.date?" • "+s.date:""}`;
-  const heroSessionDate=document.getElementById("heroSessionDate");
-  if(heroSessionDate)heroSessionDate.textContent=`${s.session||""}${s.date?" • "+s.date:""}`;
+  const mobileLiveSession=document.getElementById("mobileLiveSession");
+  if(mobileLiveSession){
+    mobileLiveSession.textContent=`${s.session||""}${s.date?" • "+s.date:""}`;
+  }
+if(sessionDateLine)sessionDateLine.textContent=`${s.session||""}${s.date?" • "+s.date:""}`;
+if(heroSessionDate)heroSessionDate.textContent=`${s.session||""}${s.date?" • "+s.date:""}`;
   const sid=String(s.sessionId||"");
   const me=(s.players||[]).find(x=>String(x.name||"").trim().toLowerCase()===currentPlayerName.trim().toLowerCase());
   if(!me){
@@ -208,7 +218,7 @@ function startLivePlayerView(name){
     if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
   });
 }
-// V20 — a fresh/reopened page always starts at Check-In.
+// V21 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
