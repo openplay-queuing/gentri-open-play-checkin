@@ -1,4 +1,4 @@
-<!doctype html>
+a<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -36,7 +36,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 
 
 <style>
-/* V30 — one clean live heading + visible session/date line */
+/* V32 — one clean live heading + visible session/date line */
 .mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -71,7 +71,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V30 — definitive mobile live heading */
+/* V32 — definitive mobile live heading */
 #mobileLiveHeading.mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -107,7 +107,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V30 — visible session/date line directly under Open Play • Live */
+/* V32 — visible session/date line directly under Open Play • Live */
 #mobileLiveSession.mobile-live-session{
   min-height:18px!important;
   display:block!important;
@@ -124,7 +124,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
   white-space:nowrap!important;
 }
 </style>
-<style>/* V30 — show session time and date under the live heading */#mobileLiveSession{display:block!important}</style>
+<style>/* V32 — show session time and date under the live heading */#mobileLiveSession{display:block!important}</style>
 </head>
 <body><div class="wrap"><main class="card">
 <section class="hero"><h1>The Pickle Project Gentri</h1><b>OPEN PLAY CHECK-IN</b></section>
@@ -209,83 +209,134 @@ function returnToCheckIn(message){
 }
 function escLive(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function renderLiveSnapshot(s){
-  if(!s||s.active===false)return;
-  const fixedHeading=document.getElementById("mobileLiveHeading");
+  if(!s||typeof s!=="object")return;
 
   const sessionLine=document.getElementById("mobileLiveSession");
   const sid=String(s.sessionId||"");
   let sessionText=String(s.session||s.sessionTime||s.time||"").trim();
   let dateText=String(s.date||s.sessionDate||"").trim();
 
-  // Format ISO session date for the player view.
-  function formatSessionDate(v){
-    const m=String(v||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if(!m)return String(v||"");
-    const d=new Date(Number(m[1]),Number(m[2])-1,Number(m[3]));
-    return d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
-  }
-
-  // Fallback: derive the values from the Queue session ID when needed.
-  if((!sessionText||!dateText) && sid){
+  if((!sessionText||!dateText)&&sid){
     const m=sid.match(/(\d{4}-\d{2}-\d{2}).*?(\d{1,2}:\d{2}).*?(\d{1,2}:\d{2})/);
     if(m){
       if(!dateText)dateText=m[1];
       if(!sessionText)sessionText=m[2]+" – "+m[3];
     }
   }
-  if(sessionLine){
-    heading.textContent=[sessionText,dateText].filter(Boolean).join(" • ") || "Session details loading…";
-  }
-  const me=(s.players||[]).find(x=>String(x.name||"").trim().toLowerCase()===currentPlayerName.trim().toLowerCase());
-  if(!me){
-    // Fresh QR check-ins need a short window for the staff Queue to import the Supabase row.
-    if(currentPlayerName && playerSeenInCurrentSession && Date.now()>liveCheckInGraceUntil){
-      returnToCheckIn("Your Open Play session is no longer active. Please check in again.");
+
+  if(dateText){
+    const dm=dateText.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if(dm){
+      const d=new Date(Number(dm[1]),Number(dm[2])-1,Number(dm[3]));
+      dateText=d.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});
     }
-    return;
   }
-  playerSeenInCurrentSession=true;
-  liveCheckInGraceUntil=0;
-  if(sid){
-    currentSessionId=sid;
-    localStorage.setItem("gentri_open_play_session_id",sid);
+
+  if(sessionLine){
+    sessionLine.style.display="block";
+    sessionLine.textContent=[sessionText,dateText].filter(Boolean).join(" • ") || "Session details loading…";
   }
+
+  // Make the live area visible as soon as a valid saved snapshot is received.
   document.getElementById("formView").style.display="none";
   document.getElementById("successView").style.display="none";
   document.getElementById("liveView").style.display="block";
-  const courts=(s.courts||[]);
+
+  const courts=Array.isArray(s.courts)?s.courts:[];
   document.getElementById("liveCourts").innerHTML=courts.length?courts.map(c=>{
-    const a=c.players||[], left=a.slice(0,2).map(escLive).join(" / "), right=a.slice(2,4).map(escLive).join(" / ");
+    const a=Array.isArray(c.players)?c.players:[];
+    const left=a.slice(0,2).map(escLive).join(" / ");
+    const right=a.slice(2,4).map(escLive).join(" / ");
     return `<div class="court-live"><div class="court-no">Court <b>${escLive(c.court)}</b></div><div class="matchup">${left||"—"} <span class="vs">VS</span> ${right||"—"}</div></div>`;
   }).join(""):'<div class="empty-live">No games are currently in progress.</div>';
-  const groups=(s.nextGroups||[]).slice(0,3);
-  document.getElementById("liveNext").innerHTML=groups.map((g,i)=>`<div class="next-row"><div class="next-num">${i+1}</div><div>${(g.players||[]).length?(g.players||[]).map(escLive).join(" • "):"Waiting for a complete group"}</div></div>`).join("");
+
+  const groups=(Array.isArray(s.nextGroups)?s.nextGroups:[]).slice(0,3);
+  document.getElementById("liveNext").innerHTML=groups.length?groups.map((g,i)=>
+    `<div class="next-row"><div class="next-num">${i+1}</div><div>${(g.players||[]).length?(g.players||[]).map(escLive).join(" • "):"Waiting for a complete group"}</div></div>`
+  ).join(""):'<div class="empty-live">No suggested groups yet.</div>';
+
+  const players=Array.isArray(s.players)?s.players:[];
+  const me=players.find(x=>String(x.name||"").trim().toLowerCase()===currentPlayerName.trim().toLowerCase());
+
   if(me){
+    playerSeenInCurrentSession=true;
+    liveCheckInGraceUntil=0;
     document.getElementById("myGames").textContent=me.games??0;
     document.getElementById("myMatches").textContent=me.matches??me.games??0;
     document.getElementById("myStatus").textContent=me.status||"Waiting";
     document.getElementById("myQueue").textContent=me.queuePosition?("#"+me.queuePosition):"—";
+  }else{
+    document.getElementById("myGames").textContent="0";
+    document.getElementById("myMatches").textContent="0";
+    document.getElementById("myStatus").textContent="Waiting";
+    document.getElementById("myQueue").textContent="—";
   }
+
+  if(sid){
+    currentSessionId=sid;
+    try{localStorage.setItem("gentri_open_play_session_id",sid)}catch(e){}
+  }
+
   const d=s.updatedAt?new Date(s.updatedAt):new Date();
   document.getElementById("liveUpdated").textContent="Live • Updated "+d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit",second:"2-digit"});
 }
+
 async function loadPersistentLiveSnapshot(){
+  const statusEl=document.getElementById("liveUpdated");
   try{
-    const r=await fetch(SUPABASE_URL+"/rest/v1/gentri_open_play_live_state?id=eq.1&select=snapshot,updated_at",{
-      headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY},
+    const url=SUPABASE_URL+"/rest/v1/gentri_open_play_live_state?id=eq.1&select=id,snapshot,updated_at&_="+Date.now();
+    const r=await fetch(url,{
+      method:"GET",
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":"Bearer "+SUPABASE_KEY,
+        "Accept":"application/json"
+      },
       cache:"no-store"
     });
-    if(!r.ok)return;
-    const rows=await r.json();
-    if(rows&&rows[0]&&rows[0].snapshot)renderLiveSnapshot(rows[0].snapshot);
-  }catch(e){console.warn("Persistent live state:",e)}
+
+    const raw=await r.text();
+    if(!r.ok){
+      console.error("Live-state HTTP",r.status,raw);
+      if(statusEl)statusEl.textContent="Live-state read error "+r.status;
+      return;
+    }
+
+    let rows=[];
+    try{ rows=JSON.parse(raw); }
+    catch(e){
+      console.error("Live-state JSON parse",raw);
+      if(statusEl)statusEl.textContent="Live-state JSON error";
+      return;
+    }
+
+    if(!Array.isArray(rows)||!rows.length){
+      if(statusEl)statusEl.textContent="Connected • No live-state row found";
+      return;
+    }
+
+    let snap=rows[0].snapshot;
+    // jsonb normally arrives as an object, but accept a string as well.
+    if(typeof snap==="string"){
+      try{snap=JSON.parse(snap)}catch(e){}
+    }
+    if(!snap||typeof snap!=="object"){
+      if(statusEl)statusEl.textContent="Connected • Live-state snapshot is empty";
+      return;
+    }
+
+    renderLiveSnapshot(snap);
+  }catch(e){
+    console.error("Persistent live state:",e);
+    if(statusEl)statusEl.textContent="Live-state network error";
+  }
 }
 
 function startLivePlayerView(name){
   currentPlayerName=name||localStorage.getItem("gentri_open_play_player_name")||"";
   if(!window.supabase)return;
-  if(liveClient)return;
-  liveClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  if(liveChannel)return;
+  if(!liveClient)liveClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
   liveChannel=liveClient.channel(LIVE_CHANNEL,{config:{broadcast:{self:false}}});
   liveChannel.on("broadcast",{event:"snapshot"},({payload})=>renderLiveSnapshot(payload));
   liveChannel.on("broadcast",{event:"session_end"},({payload})=>{
@@ -309,9 +360,13 @@ function startLivePlayerView(name){
   });
   // Persistent polling makes the page reliable even if a Realtime broadcast is missed.
   loadPersistentLiveSnapshot();
-  setInterval(loadPersistentLiveSnapshot,2000);
+  setTimeout(loadPersistentLiveSnapshot,400);
+  setInterval(loadPersistentLiveSnapshot,1500);
+  document.addEventListener("visibilitychange",()=>{
+    if(!document.hidden)loadPersistentLiveSnapshot();
+  });
 }
-// V30 — a fresh/reopened page always starts at Check-In.
+// V32 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
@@ -326,7 +381,7 @@ window.addEventListener("load",()=>{
 
 </script>
 <script>
-/* V30 — protect the static Open Play • Live heading from legacy render code. */
+/* V32 — protect the static Open Play • Live heading from legacy render code. */
 window.addEventListener("load",function(){
   const h=document.getElementById("mobileLiveHeading");
   if(!h)return;
