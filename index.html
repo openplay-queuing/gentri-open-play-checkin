@@ -36,7 +36,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 
 
 <style>
-/* V34 — one clean live heading + visible session/date line */
+/* V35 — one clean live heading + visible session/date line */
 .mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -71,7 +71,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V34 — definitive mobile live heading */
+/* V35 — definitive mobile live heading */
 #mobileLiveHeading.mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -107,7 +107,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V34 — visible session/date line directly under Open Play • Live */
+/* V35 — visible session/date line directly under Open Play • Live */
 #mobileLiveSession.mobile-live-session{
   min-height:18px!important;
   display:block!important;
@@ -124,7 +124,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
   white-space:nowrap!important;
 }
 </style>
-<style>/* V34 — show session time and date under the live heading */#mobileLiveSession{display:block!important}</style>
+<style>/* V35 — show session time and date under the live heading */#mobileLiveSession{display:block!important}</style>
 </head>
 <body><div class="wrap"><main class="card">
 <section class="hero"><h1>The Pickle Project Gentri</h1><b>OPEN PLAY CHECK-IN</b></section>
@@ -229,6 +229,27 @@ async function checkoutPlayer(){
       body:JSON.stringify({status:"checked_out"})
     });
     if(!r.ok)throw new Error(await r.text());
+
+    // Tell the admin Open Play Queue immediately that this player checked out.
+    try{
+      if(liveClient){
+        const ch=liveClient.channel("gentri-open-play-admin-sync-"+Date.now());
+        ch.subscribe(async status=>{
+          if(status==="SUBSCRIBED"){
+            await ch.send({
+              type:"broadcast",
+              event:"mobile_checkout",
+              payload:{
+                playerName:name,
+                sessionId:currentSessionId||localStorage.getItem("gentri_open_play_session_id")||"",
+                checkedOutAt:new Date().toISOString()
+              }
+            });
+            setTimeout(()=>{try{liveClient.removeChannel(ch)}catch(e){}},700);
+          }
+        });
+      }
+    }catch(e){console.warn("Checkout broadcast:",e)}
 
     try{
       localStorage.removeItem("gentri_open_play_player_name");
@@ -475,7 +496,7 @@ function startLivePlayerView(name){
     if(!document.hidden)loadPersistentLiveSnapshot();
   });
 }
-// V34 — a fresh/reopened page always starts at Check-In.
+// V35 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
@@ -492,7 +513,7 @@ window.addEventListener("load",()=>{
 
 </script>
 <script>
-/* V34 — protect the static Open Play • Live heading from legacy render code. */
+/* V35 — protect the static Open Play • Live heading from legacy render code. */
 window.addEventListener("load",function(){
   const h=document.getElementById("mobileLiveHeading");
   if(!h)return;
