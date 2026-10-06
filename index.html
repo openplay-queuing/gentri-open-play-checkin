@@ -36,7 +36,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 
 
 <style>
-/* V29 — one clean live heading + visible session/date line */
+/* V30 — one clean live heading + visible session/date line */
 .mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -71,7 +71,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V29 — definitive mobile live heading */
+/* V30 — definitive mobile live heading */
 #mobileLiveHeading.mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -107,7 +107,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V29 — visible session/date line directly under Open Play • Live */
+/* V30 — visible session/date line directly under Open Play • Live */
 #mobileLiveSession.mobile-live-session{
   min-height:18px!important;
   display:block!important;
@@ -124,7 +124,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
   white-space:nowrap!important;
 }
 </style>
-<style>/* V29 — show session time and date under the live heading */#mobileLiveSession{display:block!important}</style>
+<style>/* V30 — show session time and date under the live heading */#mobileLiveSession{display:block!important}</style>
 </head>
 <body><div class="wrap"><main class="card">
 <section class="hero"><h1>The Pickle Project Gentri</h1><b>OPEN PLAY CHECK-IN</b></section>
@@ -269,6 +269,18 @@ function renderLiveSnapshot(s){
   const d=s.updatedAt?new Date(s.updatedAt):new Date();
   document.getElementById("liveUpdated").textContent="Live • Updated "+d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit",second:"2-digit"});
 }
+async function loadPersistentLiveSnapshot(){
+  try{
+    const r=await fetch(SUPABASE_URL+"/rest/v1/gentri_open_play_live_state?id=eq.1&select=snapshot,updated_at",{
+      headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY},
+      cache:"no-store"
+    });
+    if(!r.ok)return;
+    const rows=await r.json();
+    if(rows&&rows[0]&&rows[0].snapshot)renderLiveSnapshot(rows[0].snapshot);
+  }catch(e){console.warn("Persistent live state:",e)}
+}
+
 function startLivePlayerView(name){
   currentPlayerName=name||localStorage.getItem("gentri_open_play_player_name")||"";
   if(!window.supabase)return;
@@ -290,10 +302,16 @@ function startLivePlayerView(name){
     if(sameName&&sameSession)returnToCheckIn("You have been checked out. Please check in again to rejoin.");
   });
   liveChannel.subscribe(status=>{
-    if(status==="SUBSCRIBED")document.getElementById("liveUpdated").textContent="Connected • Waiting for live update…";
+    if(status==="SUBSCRIBED"){
+      document.getElementById("liveUpdated").textContent="Connected • Loading live session…";
+      loadPersistentLiveSnapshot();
+    }
   });
+  // Persistent polling makes the page reliable even if a Realtime broadcast is missed.
+  loadPersistentLiveSnapshot();
+  setInterval(loadPersistentLiveSnapshot,2000);
 }
-// V29 — a fresh/reopened page always starts at Check-In.
+// V30 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
@@ -308,7 +326,7 @@ window.addEventListener("load",()=>{
 
 </script>
 <script>
-/* V29 — protect the static Open Play • Live heading from legacy render code. */
+/* V30 — protect the static Open Play • Live heading from legacy render code. */
 window.addEventListener("load",function(){
   const h=document.getElementById("mobileLiveHeading");
   if(!h)return;
