@@ -36,7 +36,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 
 
 <style>
-/* V35 — one clean live heading + visible session/date line */
+/* V36 — one clean live heading + visible session/date line */
 .mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -71,7 +71,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V35 — definitive mobile live heading */
+/* V36 — definitive mobile live heading */
 #mobileLiveHeading.mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -107,7 +107,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V35 — visible session/date line directly under Open Play • Live */
+/* V36 — visible session/date line directly under Open Play • Live */
 #mobileLiveSession.mobile-live-session{
   min-height:18px!important;
   display:block!important;
@@ -124,7 +124,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
   white-space:nowrap!important;
 }
 </style>
-<style>/* V35 — show session time and date under the live heading */#mobileLiveSession{display:block!important}</style>
+<style>/* V36 — show session time and date under the live heading */#mobileLiveSession{display:block!important}</style>
 </head>
 <body><div class="wrap"><main class="card">
 <section class="hero"><h1>The Pickle Project Gentri</h1><b>OPEN PLAY CHECK-IN</b></section>
@@ -216,19 +216,39 @@ async function checkoutPlayer(){
   if(statusEl)statusEl.textContent="Checking out…";
 
   try{
-    // Update all currently checked-in rows for this player.
-    const url=SUPABASE_URL+"/rest/v1/gentri_open_play_checkins?player_name=eq."+encodeURIComponent(name)+"&status=eq.checked_in";
-    const r=await fetch(url,{
-      method:"PATCH",
+    // V36: create a dedicated checkout-request row.
+    // INSERT already works for QR check-in, so this is more reliable than
+    // depending on UPDATE permissions for an existing row.
+    const r=await fetch(SUPABASE_URL+"/rest/v1/gentri_open_play_checkins",{
+      method:"POST",
       headers:{
         "apikey":SUPABASE_KEY,
         "Authorization":"Bearer "+SUPABASE_KEY,
         "Content-Type":"application/json",
         "Prefer":"return=minimal"
       },
-      body:JSON.stringify({status:"checked_out"})
+      body:JSON.stringify({
+        player_name:name,
+        gender:"Unspecified",
+        player_level:"Checkout",
+        status:"checkout_request"
+      })
     });
     if(!r.ok)throw new Error(await r.text());
+
+    // Best-effort: also mark older checked-in row(s) checked_out.
+    try{
+      await fetch(SUPABASE_URL+"/rest/v1/gentri_open_play_checkins?player_name=eq."+encodeURIComponent(name)+"&status=eq.checked_in",{
+        method:"PATCH",
+        headers:{
+          "apikey":SUPABASE_KEY,
+          "Authorization":"Bearer "+SUPABASE_KEY,
+          "Content-Type":"application/json",
+          "Prefer":"return=minimal"
+        },
+        body:JSON.stringify({status:"checked_out"})
+      });
+    }catch(e){}
 
     // Tell the admin Open Play Queue immediately that this player checked out.
     try{
@@ -496,7 +516,7 @@ function startLivePlayerView(name){
     if(!document.hidden)loadPersistentLiveSnapshot();
   });
 }
-// V35 — a fresh/reopened page always starts at Check-In.
+// V36 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
@@ -513,7 +533,7 @@ window.addEventListener("load",()=>{
 
 </script>
 <script>
-/* V35 — protect the static Open Play • Live heading from legacy render code. */
+/* V36 — protect the static Open Play • Live heading from legacy render code. */
 window.addEventListener("load",function(){
   const h=document.getElementById("mobileLiveHeading");
   if(!h)return;
