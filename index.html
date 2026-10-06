@@ -1,4 +1,4 @@
-a<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -24,7 +24,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 .court-no b{font-size:28px;display:block}.matchup{padding:12px;text-align:center;font-weight:900;color:#173f75;line-height:1.5}.vs{display:inline-block;background:#fecaca;color:#991b1b;border-radius:8px;padding:1px 9px;margin:0 7px}
 .next-live{background:#edf6ff}.next-row{display:grid;grid-template-columns:42px 1fr;gap:10px;align-items:center;background:#fff;border-radius:11px;padding:10px;margin:8px 0;color:#173f75;font-weight:800}.next-num{height:38px;border-radius:10px;background:#2563eb;color:#fff;display:grid;place-items:center;font-size:20px}
 .mine{background:#f3efff}.mine-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.mine-stat{background:#fff;border-radius:12px;padding:12px 8px;text-align:center}.mine-stat span{display:block;font-size:12px;color:#475569;font-weight:700}.mine-stat b{display:block;margin-top:5px;font-size:22px;color:#123d72}.mine-stat.status b{font-size:16px;color:#2563eb}
-.live-note{text-align:center;color:#64748b;font-size:12px;font-weight:700;padding:2px 5px 8px}.empty-live{color:#64748b;text-align:center;padding:13px;font-weight:700}
+.live-note{text-align:center;color:#64748b;font-size:12px;font-weight:700;padding:2px 5px 8px}.player-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0 4px}.player-actions button{padding:12px 8px;font-size:13px;border-radius:11px}.player-actions .checkout{background:#b91c1c}.player-actions .resume{background:#0b4f8a}.empty-live{color:#64748b;text-align:center;padding:13px;font-weight:700}
 @media(max-width:390px){.mine-grid{grid-template-columns:1fr 1fr}.matchup{font-size:14px}.live{padding:10px}}
 </style><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -36,7 +36,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 
 
 <style>
-/* V32 — one clean live heading + visible session/date line */
+/* V33 — one clean live heading + visible session/date line */
 .mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -71,7 +71,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V32 — definitive mobile live heading */
+/* V33 — definitive mobile live heading */
 #mobileLiveHeading.mobile-live-heading{
   display:block!important;
   width:100%!important;
@@ -107,7 +107,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 </style>
 
 <style>
-/* V32 — visible session/date line directly under Open Play • Live */
+/* V33 — visible session/date line directly under Open Play • Live */
 #mobileLiveSession.mobile-live-session{
   min-height:18px!important;
   display:block!important;
@@ -124,7 +124,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
   white-space:nowrap!important;
 }
 </style>
-<style>/* V32 — show session time and date under the live heading */#mobileLiveSession{display:block!important}</style>
+<style>/* V33 — show session time and date under the live heading */#mobileLiveSession{display:block!important}</style>
 </head>
 <body><div class="wrap"><main class="card">
 <section class="hero"><h1>The Pickle Project Gentri</h1><b>OPEN PLAY CHECK-IN</b></section>
@@ -133,7 +133,7 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 <label>Reclub Name</label><input id="name" autocomplete="name" placeholder="Enter your Reclub name">
 <label>Gender</label><select id="gender"><option value="">Select gender</option><option>Female</option><option>Male</option><option>Unspecified</option></select>
 <label>Open Play Level</label><select id="level"><option value="">Select level</option><option>Beginner</option><option>Low Intermediate</option><option>High Intermediate/Advanced</option></select>
-<button id="submitBtn" onclick="submitCheckin()">CHECK IN TO GENTRI OPEN PLAY</button>
+<button id="submitBtn" onclick="submitCheckin()">CHECK IN TO GENTRI OPEN PLAY</button><button id="resumeBtn" type="button" onclick="resumeExistingSession()" style="margin-top:10px;background:#2563eb">RE-LOGIN / RESUME SESSION</button>
 <div class="privacy">After check-in, this page will show the live Open Play court and queue view.</div>
 </section>
 <section class="success" id="successView"><div class="check">✓</div>
@@ -152,6 +152,10 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
       <div class="mine-stat"><span>Queue Position</span><b id="myQueue">—</b></div>
     </div>
   </div>
+  <div class="player-actions">
+    <button class="resume" type="button" onclick="reloginFromLive()">RE-LOGIN</button>
+    <button class="checkout" type="button" onclick="checkoutPlayer()">CHECK OUT</button>
+  </div>
   <div class="live-note" id="liveUpdated">Connecting to the live Open Play view…</div>
 </section>
 </main></div>
@@ -159,6 +163,93 @@ button:disabled{opacity:.55}.msg{display:none;padding:13px;border-radius:10px;ma
 const SUPABASE_URL='https://ilonhufjhtuhakywomom.supabase.co';
 const SUPABASE_KEY='sb_publishable_-tT-4PZl6uJDjSPAo1flpA_yFBintoX';
 function errorMsg(m){const e=document.getElementById("err");e.textContent=m;e.style.display="block"}
+
+function normName(v){return String(v||"").trim().replace(/\s+/g," ").toLowerCase()}
+
+async function getCurrentSnapshot(){
+  try{
+    const r=await fetch(SUPABASE_URL+"/rest/v1/gentri_open_play_live_state?id=eq.1&select=snapshot&_="+Date.now(),{
+      headers:{"apikey":SUPABASE_KEY,"Authorization":"Bearer "+SUPABASE_KEY,"Accept":"application/json"},
+      cache:"no-store"
+    });
+    if(!r.ok)return null;
+    const rows=await r.json();
+    let s=rows&&rows[0]?rows[0].snapshot:null;
+    if(typeof s==="string"){try{s=JSON.parse(s)}catch(e){}}
+    return s&&typeof s==="object"?s:null;
+  }catch(e){return null}
+}
+
+async function resumeExistingSession(){
+  const name=document.getElementById("name").value.trim().replace(/\s+/g," ");
+  if(!name)return errorMsg("Please enter your Reclub name first.");
+  document.getElementById("err").style.display="none";
+  const s=await getCurrentSnapshot();
+  if(!s)return errorMsg("The live session could not be loaded. Please try again.");
+  const me=(Array.isArray(s.players)?s.players:[]).find(p=>normName(p.name)===normName(name));
+  if(!me)return errorMsg("No active session was found for this Reclub name. Please check in first.");
+  currentPlayerName=name;
+  localStorage.setItem("gentri_open_play_player_name",name);
+  if(s.sessionId)localStorage.setItem("gentri_open_play_session_id",String(s.sessionId));
+  playerSeenInCurrentSession=true;
+  document.getElementById("formView").style.display="none";
+  document.getElementById("successView").style.display="none";
+  document.getElementById("liveView").style.display="block";
+  startLivePlayerView(name);
+  renderLiveSnapshot(s);
+}
+
+function reloginFromLive(){
+  document.getElementById("liveView").style.display="none";
+  document.getElementById("successView").style.display="none";
+  document.getElementById("formView").style.display="block";
+  document.getElementById("name").value=currentPlayerName||localStorage.getItem("gentri_open_play_player_name")||"";
+  document.getElementById("err").style.display="none";
+}
+
+async function checkoutPlayer(){
+  const name=currentPlayerName||localStorage.getItem("gentri_open_play_player_name")||"";
+  if(!name)return reloginFromLive();
+  if(!confirm("Are you sure you want to check out of this Open Play session?"))return;
+
+  const statusEl=document.getElementById("liveUpdated");
+  if(statusEl)statusEl.textContent="Checking out…";
+
+  try{
+    // Update all currently checked-in rows for this player.
+    const url=SUPABASE_URL+"/rest/v1/gentri_open_play_checkins?player_name=eq."+encodeURIComponent(name)+"&status=eq.checked_in";
+    const r=await fetch(url,{
+      method:"PATCH",
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":"Bearer "+SUPABASE_KEY,
+        "Content-Type":"application/json",
+        "Prefer":"return=minimal"
+      },
+      body:JSON.stringify({status:"checked_out"})
+    });
+    if(!r.ok)throw new Error(await r.text());
+
+    try{
+      localStorage.removeItem("gentri_open_play_player_name");
+      localStorage.removeItem("gentri_open_play_session_id");
+    }catch(e){}
+    currentPlayerName="";
+    currentSessionId="";
+    playerSeenInCurrentSession=false;
+    document.getElementById("liveView").style.display="none";
+    document.getElementById("successView").style.display="none";
+    document.getElementById("formView").style.display="block";
+    document.getElementById("name").value="";
+    document.getElementById("gender").value="";
+    document.getElementById("level").value="";
+    errorMsg("You have been checked out. You can re-check in anytime.");
+  }catch(e){
+    console.error("Checkout:",e);
+    if(statusEl)statusEl.textContent="Checkout failed • Please ask staff for assistance";
+  }
+}
+
 async function submitCheckin(){
  const name=document.getElementById("name").value.trim().replace(/\s+/g," ");
  const gender=document.getElementById("gender").value;
@@ -166,6 +257,22 @@ async function submitCheckin(){
  if(!name)return errorMsg("Please enter your name.");
  if(!gender)return errorMsg("Please select your gender.");
  if(!level)return errorMsg("Please select your Open Play level.");
+
+ // If this name is already active in the current session, resume instead of creating a duplicate.
+ const existingSnapshot=await getCurrentSnapshot();
+ const existingPlayer=existingSnapshot&&(Array.isArray(existingSnapshot.players)?existingSnapshot.players:[])
+   .find(p=>normName(p.name)===normName(name));
+ if(existingPlayer){
+   currentPlayerName=name;
+   localStorage.setItem("gentri_open_play_player_name",name);
+   playerSeenInCurrentSession=true;
+   document.getElementById("formView").style.display="none";
+   document.getElementById("liveView").style.display="block";
+   startLivePlayerView(name);
+   renderLiveSnapshot(existingSnapshot);
+   return;
+ }
+
  const b=document.getElementById("submitBtn"); b.disabled=true;b.textContent="CHECKING IN...";
  document.getElementById("err").style.display="none";
  try{
@@ -197,7 +304,7 @@ let liveClient=null,liveChannel=null,currentPlayerName="",currentSessionId="";
 let liveCheckInGraceUntil=0,playerSeenInCurrentSession=false;
 function returnToCheckIn(message){
   try{
-    localStorage.removeItem("gentri_open_play_player_name");
+    // Keep the last player name so an accidentally closed page can be resumed.
     localStorage.removeItem("gentri_open_play_session_id");
   }catch(e){}
   currentPlayerName="";currentSessionId="";liveCheckInGraceUntil=0;playerSeenInCurrentSession=false;
@@ -366,22 +473,24 @@ function startLivePlayerView(name){
     if(!document.hidden)loadPersistentLiveSnapshot();
   });
 }
-// V32 — a fresh/reopened page always starts at Check-In.
+// V33 — a fresh/reopened page always starts at Check-In.
 window.addEventListener("load",()=>{
   try{
     localStorage.removeItem("gentri_open_play_player_name");
     localStorage.removeItem("gentri_open_play_session_id");
   }catch(e){}
+  const rememberedName=localStorage.getItem("gentri_open_play_player_name")||"";
   currentPlayerName="";
   currentSessionId="";
   document.getElementById("formView").style.display="block";
+  if(rememberedName)document.getElementById("name").value=rememberedName;
   document.getElementById("successView").style.display="none";
   document.getElementById("liveView").style.display="none";
 });
 
 </script>
 <script>
-/* V32 — protect the static Open Play • Live heading from legacy render code. */
+/* V33 — protect the static Open Play • Live heading from legacy render code. */
 window.addEventListener("load",function(){
   const h=document.getElementById("mobileLiveHeading");
   if(!h)return;
